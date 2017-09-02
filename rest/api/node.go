@@ -21,19 +21,9 @@ var (
 )
 
 type NodeApi struct {
-	Router *mux.Router
 	wgMu   sync.RWMutex
 	routes Routes
 }
-
-type Route struct {
-	Name        string
-	Method      string
-	Pattern     string
-	HandlerFunc http.HandlerFunc
-}
-
-type Routes []Route
 
 type Node struct {
 	Name   string            `json:"name"`
@@ -72,15 +62,15 @@ func NewConfig() *Config {
 	return config
 }
 
-func NewNodeApi() *NodeApi {
-	router := mux.NewRouter().StrictSlash(true)
-	api := NodeApi{Router: router}
+func NewNodeApi(router *mux.Router) *NodeApi {
+	api := NodeApi{}
 	routes := Routes{
 		Route{"Node", "GET", "/nodes", api.list},
 		Route{"Node", "POST", "/nodes", api.post},
 		Route{"Node", "GET", "/nodes/{node}", api.show},
 		Route{"Node", "DELETE", "/nodes/{node}", api.delete},
 	}
+	api.routes = routes
 	for _, route := range routes {
 		router.
 			Methods(route.Method).
