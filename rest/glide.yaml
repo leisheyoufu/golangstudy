@@ -1,0 +1,4 @@
+package: github.com/leisheyoufu/golangstudy/rest
+import:
+- package: github.com/gorilla/mux
+  version: ~1.4.0
