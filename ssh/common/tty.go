@@ -1,16 +1,16 @@
 package common
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	"errors"
 )
 
-type Tty struct {}
+type Tty struct{}
 
-func (*Tty)size() (int, int, error) {
+func (*Tty) size() (int, int, error) {
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
 	out, err := cmd.Output()
@@ -18,7 +18,7 @@ func (*Tty)size() (int, int, error) {
 		return 0, 0, err
 	}
 	parts := strings.Split(string(out), " ")
-	if(len(parts) != 2) {
+	if len(parts) != 2 {
 		return 0, 0, errors.New("The output of 'stty size' command is not supported.")
 	}
 	x, err := strconv.Atoi(parts[0])
@@ -32,8 +32,8 @@ func (*Tty)size() (int, int, error) {
 	return int(x), int(y), err
 }
 
-func (t*Tty)Width() (int, error) {
-	width, _, err:= t.size()
+func (t *Tty) Width() (int, error) {
+	width, _, err := t.size()
 	if err != nil {
 		return 0, err
 	}
@@ -41,8 +41,8 @@ func (t*Tty)Width() (int, error) {
 }
 
 // Height returns the height of the terminal.
-func (t*Tty)Height() (int, error) {
-	_, height, err:= t.size()
+func (t *Tty) Height() (int, error) {
+	_, height, err := t.size()
 	if err != nil {
 		return 0, err
 	}

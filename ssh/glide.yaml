@@ -1,4 +1,3 @@
 package: github.com/leisheyoufu/golangstudy/ssh
 import:
-- package: github.com/shiena/ansicolor
 - package: golang.org/x/crypto/ssh
