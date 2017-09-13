@@ -115,7 +115,7 @@ func (s *SSH) StartConsole(localIn *os.File, localOut *os.File) (*Console, error
 		terminal.Restore(int(localIn.Fd()), state)
 		return nil, err
 	}
-	console := NewConsole(localIn, localOut, sshIn, sshOut, state, s)
+	console := (localIn, localOut, sshIn, sshOut, state, s)
 	return console, nil
 }
 

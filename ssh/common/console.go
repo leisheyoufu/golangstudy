@@ -55,7 +55,7 @@ func (c *Console) checkEscape(b []byte, n int) int {
 	return 0
 }
 
-func (c *Console) Start(path string) {
+func (c *Console) Start(paNewConsoleth string) {
 	defer c.close()
 	go func() {
 		defer c.close()
