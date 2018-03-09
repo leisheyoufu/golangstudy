@@ -1,45 +1,33 @@
 var Terminal = require('xterm').Terminal;
 Terminal.applyAddon(require('xterm/lib/addons/fit'));
 
-var terminalContainer = document.getElementById('term-box');
-term = new Terminal({
-    cursorBlink: true
-});
-term.open(terminalContainer);
-term.fit();
-var viewport = document.querySelector('.xterm-viewport');
-
-function log() {
-    console.log(
-        term.cols,
-        term.rows,
-        viewport.style.lineHeight,
-        viewport.style.height
-    );
+class Session {
+    constructor() {
+        this.url = 'ws://' + window.location.host + window.location.pathname + 'term';
+        this.ws = new WebSocket(this.url);
+        this.term = this.openTerm();
+        console.log(this.term);
+        this.ws.onmessage = function(event) {
+            this.term.write(event.data);
+        }.bind(this);
+        this.term.on('key', function(key, ev) {
+            this.term.fit();
+            this.ws.send(key);
+        }.bind(this));
+    }
+    openTerm() {
+        var terminalContainer = document.getElementById('term-box');
+        var term = new Terminal({
+            cursorBlink: true
+        })
+        term.open(terminalContainer)
+        term.fit();
+        return term;
+    }
 }
 
-log();
-
-term.writeln('this is demo for "refresh-viewport-height"!');
-term.writeln('press any key!');
-log();
-
-var url = 'ws://' + window.location.host + window.location.pathname + 'term';
-var ws = new WebSocket(url);
-
-/*
 if (document.readyState === 'complete' || document.readyState !== 'loading') {
-    openWs();
+    new Session();
 } else {
-    document.addEventListener('DOMContentLoaded', openWs);
+    document.addEventListener('DOMContentLoaded', new Session());
 }
-*/
-
-term.on('key', function(key, ev) {
-    // let's change the line-height!
-    terminalContainer.style.lineHeight = '20px';
-    term.fit();
-    term.write(key);
-    ws.send(key);
-    log();
-});

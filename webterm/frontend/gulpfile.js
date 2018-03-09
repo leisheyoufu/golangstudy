@@ -10,9 +10,12 @@ gp.task("webpack", function() {
         .pipe(gp.dest('../dist/'))
 })
 
-gp.task("run", ["webpack"], function() {
+gp.task("build", ["webpack"], function() {
     gp.src(['./src/html/*.html'])
         .pipe(gp.dest('../dist'))
+})
+
+gp.task("run", ["build"], function() {
     gp.watch('src/*.js', function() {
         gulp.run('run');
     });
