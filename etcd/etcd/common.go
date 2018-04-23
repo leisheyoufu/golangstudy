@@ -38,6 +38,13 @@ func contextError(ctx context.Context) error {
 	return ctx.Err()
 }
 
+func printMsg(msg string) {
+	if !debug {
+		return
+	}
+	fmt.Printf(msg)
+}
+
 func printFunc() {
 	if !debug {
 		return

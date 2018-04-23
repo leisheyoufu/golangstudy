@@ -30,6 +30,7 @@ func aquireLock(cli *clientv3.Client, lockKey string) (*concurrency.Mutex, error
 }
 
 func releaseLock(cli *clientv3.Client, m *concurrency.Mutex) error {
+	// cl: unlock would help delete the key
 	return m.Unlock(context.TODO())
 }
 

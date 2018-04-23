@@ -35,4 +35,5 @@ func main() {
 	etcd.TestTxn()
 	etcd.TestWatch()
 	etcd.TestLock()
+	etcd.TestLease()
 }
