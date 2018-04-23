@@ -34,4 +34,5 @@ func main() {
 	etcd.TestBulk()
 	etcd.TestTxn()
 	etcd.TestWatch()
+	etcd.TestLock()
 }

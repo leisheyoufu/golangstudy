@@ -134,5 +134,10 @@ func TestWatch() {
 	// watch single put
 	go dataChange(cli)
 	watch(cli, "/nodes")
+	err = delete(cli, testKey)
+	if err != nil {
+		fmt.Printf("Failed to delete key %s\n", testKey)
+		return
+	}
 	fmt.Printf("TestWatch: ok\n")
 }
