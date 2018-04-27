@@ -14,10 +14,13 @@ const (
 	serviceLock     = "/service/lock/etcdtest"
 )
 
-func registerService(cli *clientv3.Client, id string) error {
+func registerService(cli *clientv3.Client, id string, ready chan<- struct{}) error {
 	m, err := aquireLock(cli, serviceLock)
 	if err != nil {
 		return err
+	}
+	if ready != nil {
+		ready <- struct{}{}
 	}
 	_, err = get(cli, keepAliveKey)
 	if err == nil {
@@ -66,10 +69,11 @@ func TestLease() {
 		return
 	}
 	defer cli.Close()
-	go registerService(cli, "master")
-	time.Sleep(1 * time.Second)
+	ready := make(chan struct{})
+	go registerService(cli, "master", ready)
+	<-ready
 	for {
-		err = registerService(cli, "slave")
+		err = registerService(cli, "slave", nil)
 		if err != nil {
 			if err.Error() == "slave: Already registered" {
 				continue

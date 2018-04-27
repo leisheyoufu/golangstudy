@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	bulkNodeNumber = 3
+	bulkNodeNumber = 100
 	requestTimeout = 5 * time.Second
 	dialTimeout    = 5 * time.Second
 	debug          = false

@@ -79,7 +79,7 @@ func validate(index int, events []*clientv3.Event, cancel func()) (err error) {
 
 func watch(cli *clientv3.Client, path string) {
 	ctx, cancel := context.WithCancel(context.Background())
-	rch := cli.Watch(ctx, "/nodes", clientv3.WithPrefix())
+	rch := cli.Watch(ctx, path, clientv3.WithPrefix())
 	i := 0
 	// NOTE(cl): one operation may generate data in channel
 	for wresp := range rch {

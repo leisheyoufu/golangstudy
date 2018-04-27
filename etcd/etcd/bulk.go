@@ -24,7 +24,7 @@ func bulkPut(cli *clientv3.Client, m map[string]map[string]string) error {
 		ops[i] = clientv3.OpPut(k, string(data))
 		i++
 	}
-	// NOTE(cl): by defaultthe length of ops could not larger than 128 see
+	// NOTE(cl): by default the length of ops could not larger than 128 see
 	// see https://github.com/coreos/etcd/issues/7826
 	response, err = cli.Txn(ctx).Then(ops...).Commit()
 	if ctxErr := contextError(ctx); ctxErr != nil {
@@ -49,7 +49,7 @@ func bulkQeury(cli *clientv3.Client, path string, start int, end int) (map[strin
 		name = fmt.Sprintf("%s/%d", path, i)
 		ops[i] = clientv3.OpGet(name)
 	}
-	// NOTE(cl): by defaultthe length of ops could not larger than 128 see
+	// NOTE(cl): by default the length of ops could not larger than 128 see
 	// see https://github.com/coreos/etcd/issues/7826
 	response, err := cli.Txn(ctx).Then(ops...).Commit()
 	if err != nil {
@@ -87,7 +87,7 @@ func bulkDelete(cli *clientv3.Client, path string, start, end int) error {
 		name = fmt.Sprintf("%s/%d", path, i)
 		ops[i] = clientv3.OpDelete(name)
 	}
-	// NOTE(cl): by defaultthe length of ops could not larger than 128 see
+	// NOTE(cl): by default the length of ops could not larger than 128 see
 	// see https://github.com/coreos/etcd/issues/7826
 	response, err = cli.Txn(ctx).Then(ops...).Commit()
 	if err != nil {
