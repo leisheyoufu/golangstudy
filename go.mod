@@ -18,6 +18,7 @@ require (
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.8 // indirect
 	github.com/kr/pty v1.1.8
@@ -31,7 +32,7 @@ require (
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/api v0.0.0-00010101000000-000000000000 // indirect
+	k8s.io/api v0.0.0-00010101000000-000000000000
 	k8s.io/apimachinery v0.0.0-00010101000000-000000000000
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/klog v1.0.0 // indirect
