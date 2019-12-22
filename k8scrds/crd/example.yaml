@@ -1,0 +1,7 @@
+apiVersion: loch.k8s.io/v1
+kind: Student
+metadata:
+  name: object-student
+spec:
+  name: "loch"
+  school: "scu"
