@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/leisheyoufu/golangstudy/goruntine/ctx"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -27,7 +28,7 @@ func WriteFile2(content string) {
 
 }
 
-func main() {
+func WriteConsoleInGoruntine() {
 	runtime.GOMAXPROCS(1)
 	for i := 0; i < 100; i++ {
 		go func(i int) {
@@ -39,4 +40,11 @@ func main() {
 	}
 	time.Sleep((time.Duration(1) * time.Second))
 	fmt.Println("Done")
+}
+
+func main() {
+	//WriteConsoleInGoruntine()
+	ctx.Cancel()
+	ctx.Timeout()
+	ctx.WithValue()
 }
