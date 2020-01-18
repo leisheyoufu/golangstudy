@@ -20,7 +20,9 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/kr/pty v1.1.8
+	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.13.0 // indirect
 	golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1
@@ -30,6 +32,7 @@ require (
 	google.golang.org/grpc v1.25.1
 	k8s.io/api v0.17.0
 	k8s.io/apimachinery v0.17.0
+	k8s.io/cli-runtime v0.17.0
 	k8s.io/client-go v0.17.0
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6 // indirect
