@@ -24,4 +24,6 @@ func main() {
 	client.GetPodsFromClientset(clientset)
 	client.GetNodesFromInformer(clientset)
 	client.GetPodsFromInformer(clientset)
+	client.GetServiceForDeployment("coredns", "kube-system", clientset)
+	client.GetPodsForSvc("kube-dns", "kube-system", clientset)
 }
