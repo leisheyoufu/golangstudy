@@ -42,9 +42,20 @@ func WriteConsoleInGoruntine() {
 	fmt.Println("Done")
 }
 
+func BreakLabel() {
+Loop:
+	for i := 0; i < 10; i++ {
+		if i == 5 {
+			break Loop
+		}
+	}
+	fmt.Println("Break Label loop ends")
+}
+
 func main() {
 	//WriteConsoleInGoruntine()
 	ctx.Cancel()
 	ctx.Timeout()
 	ctx.WithValue()
+	BreakLabel()
 }
