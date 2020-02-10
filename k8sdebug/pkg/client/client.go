@@ -74,9 +74,10 @@ func ForkDebugPod(clientset *kubernetes.Clientset, pod *v1.Pod) (*v1.Pod, error)
 		"run": "debug-httpd",
 	}
 	copyPod.Name = fmt.Sprintf("debug-pod-%s", pod.Name)
-	for _, container := range copyPod.Spec.Containers {
-		container.LivenessProbe = nil
-		container.ReadinessProbe = nil
+	for i, _ := range copyPod.Spec.Containers {
+		copyPod.Spec.Containers[i].LivenessProbe = nil
+		copyPod.Spec.Containers[i].ReadinessProbe = nil
+		copyPod.Spec.Containers[i].VolumeMounts = nil
 	}
 	copyPod.Spec.RestartPolicy = v1.RestartPolicyNever
 	copyPod.Spec.Volumes = []v1.Volume{
