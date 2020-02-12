@@ -10,6 +10,8 @@ replace (
 )
 
 require (
+	github.com/Shopify/sarama v1.26.1
+	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/coreos/etcd v3.3.18+incompatible
 	github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f // indirect
 	github.com/garyburd/redigo v1.6.0
@@ -25,8 +27,8 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/zap v1.13.0 // indirect
-	golang.org/x/crypto v0.0.0-20191128160524-b544559bb6d1
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.25.1
