@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/leisheyoufu/golangstudy/goruntine/ctx"
+	"github.com/leisheyoufu/golangstudy/base/goruntine/ctx"
 	"io/ioutil"
 	"os"
 	"runtime"

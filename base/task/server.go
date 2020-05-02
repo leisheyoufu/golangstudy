@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/leisheyoufu/golangstudy/task/actor"
-	"github.com/leisheyoufu/golangstudy/task/common"
+	"github.com/leisheyoufu/golangstudy/base/task/actor"
+	"github.com/leisheyoufu/golangstudy/base/task/common"
 )
 
 func generalNoParamFunc() {
