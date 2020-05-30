@@ -76,5 +76,4 @@ func TestCloseChannel() {
 func main() {
 	TestGetItemFromCloseQueue()
 	TestCloseChannel()
-
 }
