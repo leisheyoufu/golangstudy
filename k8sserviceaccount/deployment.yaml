@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: serviceaccountexample
+  namespace: loch
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: serviceaccountexample
+    spec:
+      containers:
+      - name: serviceaccountexample
+        image: clscu/serviceaccount:latest
+        imagePullPolicy: IfNotPresent
