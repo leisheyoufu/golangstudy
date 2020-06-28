@@ -1,13 +1,11 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"net"
 	"io/ioutil"
+	"net"
+	"os"
 )
-
-
 
 func main() {
 	if len(os.Args) != 2 {

@@ -1,11 +1,11 @@
 package common
 
 import (
-	"runtime"
 	"fmt"
-	"path/filepath"
-	"os"
 	"log"
+	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 

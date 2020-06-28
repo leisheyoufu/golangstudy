@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
-	log "github.com/sirupsen/logrus"
 	"github.com/leisheyoufu/golangstudy/logger/common"
+	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 func init() {
@@ -15,12 +15,12 @@ func init() {
 	// Can be any io.Writer, see below for File example
 	log.SetOutput(os.Stdout)
 
-	 file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
-	 if err == nil {
-	  log.SetOutput(file)
-	 } else {
-	  log.Info("Failed to log to file, using default stderr")
-	 }
+	file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	} else {
+		log.Info("Failed to log to file, using default stderr")
+	}
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.InfoLevel)
@@ -29,7 +29,7 @@ func init() {
 func main() {
 	contextLogger := log.WithFields(log.Fields{
 		"common": "this is a common field",
-		"other": "I also should be logged always",
+		"other":  "I also should be logged always",
 	})
 
 	contextLogger.Info("I'll be logged with common and other field")
