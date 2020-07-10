@@ -33,3 +33,12 @@ github.com/pingcap/dm/pkg/binlog/event.(*testCommonSuite).TestGenCommonFileHeade
 dlv test github.com/pingcap/dm/pkg/binlog/event/
 (dlv) b github.com/pingcap/dm/pkg/binlog/event/generator_test.go:128
 (dlv) b github.com/pingcap/dm/pkg/binlog/event/generator_test.go:304
+
+
+## set string lenth to avoid of truncate
+(dlv) config -list
+...
+max-string-len         1000
+max-array-values       1000
+...
+(dlv) config max-string-len 1000
