@@ -13,18 +13,21 @@ require (
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/coreos/etcd v3.3.18+incompatible
+	github.com/emicklei/go-restful v2.9.6+incompatible
+	github.com/emicklei/go-restful-openapi v1.4.1
+	github.com/emicklei/go-restful-swagger12 v0.0.0-20170926063155-7524189396c6
 	github.com/garyburd/redigo v1.6.0
+	github.com/go-openapi/spec v0.19.7
 	github.com/golang/protobuf v1.3.4
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/kr/pty v1.1.8
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pingcap/dm v1.0.6
 	github.com/siddontang/go-mysql v0.0.0-20200529051020-8250ec49cbbf
-	github.com/sirupsen/logrus v1.4.2
+	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
