@@ -26,6 +26,7 @@ require (
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pingcap/dm v1.0.6
+	github.com/pingcap/failpoint v0.0.0-20200702092429-9f69995143ce
 	github.com/siddontang/go-mysql v0.0.0-20200529051020-8250ec49cbbf
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.5

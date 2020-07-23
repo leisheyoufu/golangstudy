@@ -1,44 +1,16 @@
-## Setup delve
-go get github.com/go-delve/delve/cmd/dlv
+## Build failpoint
+git clone https://github.com/pingcap/failpoint.git
+cd failpoint
+make
+cp failpoint-ctl $GOBIN/
 
-## pingcap dm unit test
-github.com/pingcap/dm/pkg/binlog/event/common_test.go
-```
-func (t *testCommonSuite) TestGenCommonGTIDEvent(c *C) {
-	var (
-		flavor           = gmysql.MySQLFlavor
-		serverID  uint32 = 101
-		gSetStr          = ""
-		gSet      gtid.Set
-		latestPos uint32 = 123
-	)
+## Enable failpoint
+go get -v github.com/pingcap/failpoint@9f69995143ce   // igonore this statement if go.mod has the correct version
+failpoint-ctl enable
+// failpoint 会找到包的标志，然后更改埋点的代码，制造错误的场景看程序的反应
+GO_FAILPOINTS="main/testPanic=return(true)" go run failpoint.go binding__failpoint_binding__.go
+failpoint-ctl disable
 
-	// nil gSet, invalid
-	gtidEv, err := GenCommonGTIDEvent(flavor, serverID, latestPos, gSet)
-	c.Assert(err, NotNil)
-	c.Assert(gtidEv, IsNil)
-```
-go test -check.f "testCommonSuit" -check.list
-
-## pingcap dm unit test with dlv
-```
-(dlv) b github.com/pingcap/dm/pkg/binlog/event/common_test.go:43
-Breakpoint 1 set at 0x1588ce9 for github.com/pingcap/dm/pkg/binlog/event.(*testCommonSuite).TestGenCommonFileHeader() ./common_test.go:43
-(dlv) r
-Process restarted with PID 79893
-(dlv) c
-github.com/pingcap/dm/pkg/binlog/event.(*testCommonSuite).TestGenCommonFileHeader() ./common_test.go:43 (hits goroutine(20):1 total:1) (PC: 0x1588ce9)
-```
-
-dlv test github.com/pingcap/dm/pkg/binlog/event/
-(dlv) b github.com/pingcap/dm/pkg/binlog/event/generator_test.go:128
-(dlv) b github.com/pingcap/dm/pkg/binlog/event/generator_test.go:304
-
-
-## set string lenth to avoid of truncate
-(dlv) config -list
-...
-max-string-len         1000
-max-array-values       1000
-...
-(dlv) config max-string-len 1000
+## Reference
+- [failpoint](https://github.com/pingcap/failpoint)
+- [golang 故障模拟工具failpoint的使用](https://blog.csdn.net/lanyang123456/article/details/103091671)
