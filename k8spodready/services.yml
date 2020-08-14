@@ -1,0 +1,5 @@
+services:
+  - etcd-cluster
+  - kafka
+  - mysql-db
+  - zk

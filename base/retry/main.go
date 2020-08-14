@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"time"
 	"fmt"
 	"github.com/leisheyoufu/golangstudy/base/retry/wait"
+	"time"
 )
 
 const (
