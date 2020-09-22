@@ -10,6 +10,7 @@ replace (
 )
 
 require (
+	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/coreos/etcd v3.3.18+incompatible
@@ -21,13 +22,21 @@ require (
 	github.com/golang/protobuf v1.3.4
 	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
+	github.com/hashicorp/consul/api v1.7.0
 	github.com/imdario/mergo v0.3.8 // indirect
+	github.com/json-iterator/go v1.1.9
 	github.com/kr/pty v1.1.8
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
+	github.com/pingcap/check v0.0.0-20200212061837-5e12011dc712
 	github.com/pingcap/dm v1.0.6
+	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
 	github.com/pingcap/failpoint v0.0.0-20200702092429-9f69995143ce
-	github.com/siddontang/go-mysql v0.0.0-20200529051020-8250ec49cbbf
+	github.com/pingcap/parser v0.0.0-20200616075836-fab06dab2086
+	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v0.0.0-20191125035519-b054a8dfd10d
+	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed
+	github.com/siddontang/go-mysql v0.0.0-20200222075837-12e89848f047
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5

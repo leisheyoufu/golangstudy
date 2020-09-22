@@ -1,11 +1,19 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/siddontang/go-mysql/canal"
+	"os"
+
+	"github.com/leisheyoufu/golangstudy/mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
 )
+
+var host = flag.String("host", "127.0.0.1", "MySQL host")
+var port = flag.Int("port", 3306, "MySQL port")
+var user = flag.String("user", "root", "MySQL user, must have replication privilege")
+var password = flag.String("password", "123456", "MySQL password")
 
 type MyEventHandler struct {
 	canal.DummyEventHandler
@@ -33,7 +41,7 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 	//库，表
 	record := fmt.Sprintf("%s %s \n", schema, table)
-	fmt.Println(record)
+	fmt.Println("OnTable Changed", record)
 	return nil
 }
 
@@ -65,7 +73,8 @@ func (h *MyEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.Q
 		string(queryEvent.Query),         //变更的sql语句
 		string(queryEvent.StatusVars[:]), //测试显示乱码
 		queryEvent.SlaveProxyID)          //从库代理ID？
-	fmt.Println("OnDDL:", record, query_event)
+	fmt.Println("OnDDL start:", record, query_event)
+	fmt.Println("OnDDL end")
 	return nil
 }
 
@@ -74,28 +83,31 @@ func (h *MyEventHandler) String() string {
 }
 
 func main() {
+	flag.Parse()
 	//读取toml文件格式
 	//canal.NewConfigWithFile()
 	cfg := canal.NewDefaultConfig()
-	cfg.Addr = "127.0.0.1:3306"
-	cfg.User = "root"
-	cfg.Password = "123456"
+	cfg.Addr = fmt.Sprintf("%s:%d", *host, *port)
+	cfg.User = *user
+	cfg.Password = *password
 
-	cfg.Dump.TableDB = "sbtest"
-	//cfg.Dump.Tables = []string{"book","reader"}
-
+	cfg.Dump.TableDB = ""
+	fmt.Println(cfg)
 	c, err := canal.NewCanal(cfg)
 	if err != nil {
-		fmt.Println("error", err)
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		os.Exit(1)
 	}
 
 	c.SetEventHandler(&MyEventHandler{})
 	//mysql-bin.000004, 1027
-	startPos := mysql.Position{Name: "binlog.000004", Pos: 5790389}
-
-	fmt.Println("Go run")
+	pos, err := c.GetMasterPos()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err.Error())
+		os.Exit(1)
+	}
 	//从头开始监听
 	//c.Run()
 	//根据位置监听
-	c.RunFrom(startPos)
+	c.RunFrom(pos)
 }
