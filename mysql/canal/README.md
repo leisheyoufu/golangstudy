@@ -354,3 +354,5 @@ func (p *BinlogParser) parseEvent(h *EventHeader, data []byte, rawData []byte) (
 	return e, nil
 }
 ```
+### Mysql type
+// see mysql sql/log_event.h

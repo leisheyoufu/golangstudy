@@ -28,12 +28,15 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 	fmt.Println(record)
 
 	//此处是参考 https://github.com/gitstliu/MysqlToAll 里面的获取字段和值的方法
-	for columnIndex, currColumn := range ev.Table.Columns {
-		//字段名，字段的索引顺序，字段对应的值
-		// len(ev.Rows) 一次有多行
-		row := fmt.Sprintf("%v %v %v\n", currColumn.Name, columnIndex, ev.Rows[len(ev.Rows)-1][columnIndex])
-		fmt.Println("row info:", row)
+	for i, _ := range ev.Rows {
+		for j, currColumn := range ev.Table.Columns {
+			//字段名，字段的索引顺序，字段对应的值
+			// len(ev.Rows) 一次有多行
+			row := fmt.Sprintf("%v %v\n", currColumn.Name, ev.Rows[i][j])
+			fmt.Println("row info:", row)
+		}
 	}
+
 	return nil
 }
 
@@ -92,6 +95,7 @@ func main() {
 	cfg.Password = *password
 
 	cfg.Dump.TableDB = ""
+	cfg.Dump.ExecutionPath = ""
 	fmt.Println(cfg)
 	c, err := canal.NewCanal(cfg)
 	if err != nil {

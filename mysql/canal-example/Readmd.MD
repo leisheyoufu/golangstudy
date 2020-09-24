@@ -32,7 +32,7 @@ OnDDL: binlog.000004 5791058
 ## Start mysql service
 ```
 docker network create service --subnet 172.18.0.0/16
-docker run --name mysql-master -it --rm -e "MYSQL_ROOT_PASSWORD=123456" -p 3309:3306 --net=service -v `pwd`/conf/master:/etc/mysql/conf.d/ mysql:5.7
+docker run --name mysql-master -d --rm -e "MYSQL_ROOT_PASSWORD=123456" -p 3309:3306 --net=service -v `pwd`/conf/master:/etc/mysql/conf.d/ mysql:5.7
 mysql -uroot -p123456 -h127.0.0.1 -P3309
 ```
 
@@ -40,6 +40,9 @@ mysql -uroot -p123456 -h127.0.0.1 -P3309
 go run main.go --port 3309
 mysql -uroot -p123456 -h127.0.0.1 -P3309 -e "drop database Test;"
 mysql -uroot -p123456 -h127.0.0.1 -P3309 -e "source user.sql;"
+dlv debug main.go -- --port 3309
+(dlv) b main.main
+(dlv) sources
 
 ## Result
 ```
@@ -97,6 +100,79 @@ row info: status 2 1
 row info: created 3 2020-09-22 20:09:08
 
 OnPosSynced mysql-bin.000003 3095 
+```
+
+## Debug
+dlv debug main.go
+### Qeury Event
+```
+(dlv) p e
+*github.com/siddontang/go-mysql/replication.QueryEvent {
+        SlaveProxyID: 4,
+        ExecutionTime: 0,
+        ErrorCode: 0,
+        StatusVars: []uint8 len: 33, cap: 79, [0,0,0,0,0,1,32,0,128,86,0,0,0,0,6,3,115,116,100,4,45,0,45,0,8,0,12,1,84,101,115,116,0],
+        Schema: []uint8 len: 4, cap: 46, [84,101,115,116],
+        Query: []uint8 len: 34, cap: 41, [99,114,101,97,116,101,32,100,97,116,97,98,97,115,101,32,105,102,32,110,111,116,32,101,120,105,115,116,115,32,84,101,115,116],
+        GSet: github.com/siddontang/go-mysql/mysql.GTIDSet nil,}
+
+(dlv) p string(e.Query)
+"create database if not exists Test"
+(dlv) p string(e.Schema)
+"Test"
+(dlv) p stmts
+[]github.com/pingcap/parser/ast.StmtNode len: 1, cap: 1, [
+        *github.com/pingcap/parser/ast.CreateDatabaseStmt {
+                ddlNode: (*"github.com/pingcap/parser/ast.ddlNode")(0xc000080bc0),
+                IfNotExists: true,
+                Name: "Test",
+                Options: []*github.com/pingcap/parser/ast.DatabaseOption len: 0, cap: 0, [],},
+
+(dlv) p string(e.Query)
+"create table Test.User\n(\n  id int auto_increment primary key,\n  "
+(dlv) p string(e.Query)
+"BEGIN"
+
+### One insert statement contains:
+- *github.com/siddontang/go-mysql/replication.GTIDEvent
+- QueryEvent (BEGIN)
+- github.com/siddontang/go-mysql/replication.Event(*github.com/siddontang/go-mysql/replication.TableMapEvent)
+  (dlv) p string(e.Table)
+   "User"
+- *github.com/siddontang/go-mysql/replication.RowsEvent
+- *github.com/siddontang/go-mysql/replication.XIDEvent {
+        XID: 31,
+        GSet: github.com/siddontang/go-mysql/mysql.GTIDSet nil,}
+
+## 一次插入操作的event(innodb)
+```
+client event *replication.GTIDEvent
+client event *replication.QueryEvent
+cltest: QueryEvent BEGIN
+client event *replication.TableMapEvent
+client event *replication.RowsEvent  // rows Event包含多行的记录
+online_ddl t2 insert [[1 20001 José Arcadio Buendía <nil>] [2 20002 Úrsula Iguarán <nil>] [3 20003 José Arcadio <nil>]]
+
+row info: id 0 3
+
+row info: uid 1 20003
+
+row info: name 2 José Arcadio
+
+row info: info 3 <nil>
+
+client event *replication.XIDEvent
+OnPosSynced mysql-bin.000003 5995
+
+## 一次插入操作的event(innodb)
+```
+client event *replication.GTIDEvent
+client event *replication.QueryEvent
+cltest: QueryEvent BEGIN
+client event *replication.TableMapEvent
+client event *replication.RowsEvent
+client event *replication.QueryEvent
+cltest: QueryEvent COMMIT
 ```
 
 ## Reference

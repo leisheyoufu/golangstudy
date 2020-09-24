@@ -46,5 +46,6 @@ type RowsEvent struct {
 	Header *replication.EventHeader
 }
 ```
+
 ## Reference
 [如何使用 Golang 处理 MySQL 的 binlog](https://studygolang.com/articles/21373)
