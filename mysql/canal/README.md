@@ -45,7 +45,7 @@ func (b *BinlogSyncer) onStream(s *BinlogStreamer) {
     if err = b.parseEvent(s, data); err != nil {  // 会检查收到的event包是否正确，然后发到s.ch(BinlogEvent channel)
 ```
 ### 会对event type 进行解析，
-解析binlog的关键函数 runSyncBinlog
+解析binlog的关键函数 runSyncBinlog, 这里Event是在parseEvent中根据二进制封装后生成的
 ```
 func (c *Canal) runSyncBinlog() error {
 	s, err := c.startSyncer()

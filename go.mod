@@ -13,7 +13,6 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
-	github.com/confluentinc/confluent-kafka-go v1.4.2
 	github.com/coreos/etcd v3.3.18+incompatible
 	github.com/emicklei/go-restful v2.9.6+incompatible
 	github.com/emicklei/go-restful-openapi v1.4.1
@@ -43,6 +42,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/objx v0.2.0 // indirect
+	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
