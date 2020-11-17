@@ -1,0 +1,11 @@
+apiVersion: db.example.com/v1
+kind: Mysql
+metadata:
+  name: mysql-sample
+  #namespace: mysql
+spec:
+  # Add fields here
+  name: "mysql"
+  version: "5.7"
+  password: "123456"
+  port: 32006
