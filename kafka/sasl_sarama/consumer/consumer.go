@@ -18,6 +18,7 @@ import (
 )
 
 var (
+	interval  int // Millisecond
 	endpoints string
 	user      string
 	password  string
@@ -34,6 +35,7 @@ func init() {
 	flag.StringVar(&password, "pass", "", "kafka user password")
 	flag.StringVar(&topic, "topic", "demo", "kafka topic")
 	flag.StringVar(&group, "group", "demo", "kafka topic")
+	flag.IntVar(&interval, "interval", 1000, "sleep time when producing message")
 	sarama.Logger = log.New(os.Stdout, "[Sarama] ", log.LstdFlags)
 }
 
@@ -44,6 +46,8 @@ func partitionConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	//config.Consumer.Offsets.Initial = 10
 	config.Consumer.Offsets.CommitInterval = 1 * time.Second
+	config.Consumer.MaxProcessingTime = 500 * time.Microsecond
+	config.Consumer.MaxWaitTime = 500 * time.Microsecond
 	config.Metadata.Full = true
 	config.Net.SASL.Enable = true
 	config.Net.SASL.User = user
@@ -86,6 +90,7 @@ func clusterConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 	defer wg.Done()
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
+	config.ClientID = "consumer_sarama"
 	config.Group.Return.Notifications = true
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	//config.Consumer.Offsets.Initial = 10
@@ -100,7 +105,7 @@ func clusterConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 	// init consumer
 	consumer, err := cluster.NewConsumer(brokers, group, topics, config)
 	if err != nil {
-		log.Printf("%s: sarama.NewSyncProducer err, message=%s \n", group, err)
+		log.Printf("%s: sarama.NewConsumer err, message=%s \n", group, err)
 		return
 	}
 	defer consumer.Close()
@@ -125,12 +130,17 @@ func clusterConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 
 	// consume messages, watch signals
 	var successes int
+	now := time.Now()
 Loop:
 	for {
 		select {
 		case msg, ok := <-consumer.Messages():
 			if ok {
-				fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", group, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+				if time.Now().Sub(now).Seconds() > 3 {
+					now = time.Now()
+					fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", group, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+				}
+				time.Sleep(time.Duration(interval) * time.Microsecond)
 				consumer.MarkOffset(msg, "") // mark message as processed
 				successes++
 			}

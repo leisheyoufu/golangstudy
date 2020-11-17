@@ -20,6 +20,7 @@ import (
 )
 
 var (
+	interval         int // Ms
 	endpoints        string
 	user             string
 	password         string
@@ -35,6 +36,7 @@ func init() {
 	flag.StringVar(&user, "user", "admin", "kafka user")
 	flag.StringVar(&password, "pass", "", "kafka user password")
 	flag.StringVar(&topic, "topic", "demo", "kafka topic")
+	flag.IntVar(&interval, "interval", 1000, "sleep time when producing message")
 	sarama.Logger = log.New(os.Stdout, "[Sarama] ", log.LstdFlags)
 }
 
@@ -84,6 +86,7 @@ func produce(brokers []string, conf *sarama.Config) error {
 	defer syncProducer.Close()
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
+	now := time.Now()
 	for active == true {
 		select {
 		case <-exit:
@@ -94,15 +97,18 @@ func produce(brokers []string, conf *sarama.Config) error {
 				Value: sarama.StringEncoder("test_message-" + time.Now().String()),
 				Headers: []sarama.RecordHeader{
 					{Key: []byte("Name"), Value: []byte("golang")},
-					{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().UnixNano(), 10))},
+					{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().Unix(), 10))},
 				},
 			})
 			if err != nil {
 				logger.Fatalln("failed to send message to ", topic, err)
 				return err
 			}
-			logger.Printf("wrote message at partition: %d, offset: %d", partition, offset)
-			time.Sleep(1 * time.Second)
+			if time.Now().Sub(now).Seconds() > 3 {
+				now = time.Now()
+				logger.Printf("wrote message at partition: %d, offset: %d", partition, offset)
+			}
+			time.Sleep(time.Duration(interval) * time.Microsecond)
 		}
 	}
 	return nil
@@ -114,6 +120,8 @@ func main() {
 	conf.Producer.Retry.Max = 1
 	conf.Producer.RequiredAcks = sarama.WaitForAll
 	conf.Producer.Return.Successes = true
+	conf.Producer.Timeout = time.Duration(10) * time.Second
+
 	conf.Metadata.Full = true
 	conf.Version = sarama.V2_4_0_0
 	conf.ClientID = "sasl_scram_client"
