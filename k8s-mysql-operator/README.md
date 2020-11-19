@@ -1,8 +1,8 @@
 ## Install operator-sdk
-RELEASE_VERSION=v1.1.0
+export RELEASE_VERSION=v1.2.0
 curl -LO https://github.com/operator-framework/operator-sdk/releases/download/${RELEASE_VERSION}/operator-sdk-${RELEASE_VERSION}-x86_64-apple-darwin
-chmod +x operator-sdk-v1.1.0-x86_64-apple-darwin
-mv operator-sdk-v1.1.0-x86_64-apple-darwin /usr/local/bin/operator-sdk
+chmod +x operator-sdk-v1.2.0-x86_64-apple-darwin
+mv operator-sdk-v1.2.0-x86_64-apple-darwin /usr/local/bin/operator-sdk
 
 ## Init project
 operator-sdk init --domain=example.com --repo=github.com/example-inc/mysql-operator

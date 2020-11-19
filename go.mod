@@ -18,9 +18,9 @@ require (
 	github.com/emicklei/go-restful-openapi v1.4.1
 	github.com/emicklei/go-restful-swagger12 v0.0.0-20170926063155-7524189396c6
 	github.com/garyburd/redigo v1.6.0
+	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/spec v0.19.7
 	github.com/golang/protobuf v1.3.4
-	github.com/googleapis/gnostic v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/consul/api v1.7.0
 	github.com/imdario/mergo v0.3.8 // indirect
@@ -59,4 +59,5 @@ require (
 	k8s.io/kubectl v0.17.2
 	k8s.io/kubernetes v1.13.1
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6 // indirect
+	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
