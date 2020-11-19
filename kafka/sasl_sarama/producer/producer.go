@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strconv"
@@ -38,6 +39,17 @@ func init() {
 	flag.StringVar(&topic, "topic", "demo", "kafka topic")
 	flag.IntVar(&interval, "interval", 1000, "sleep time when producing message")
 	sarama.Logger = log.New(os.Stdout, "[Sarama] ", log.LstdFlags)
+}
+
+func GenRandomString(l int) string {
+	str := "0123456789abcdefghijklmnopqrstuvwxyz"
+	bytes := []byte(str)
+	result := make([]byte, l)
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	for i := 0; i < l; i++ {
+		result[i] = bytes[r.Intn(len(bytes))]
+	}
+	return string(result)
 }
 
 func createTopic(brokers []string, config *sarama.Config) error {
@@ -94,7 +106,8 @@ func produce(brokers []string, conf *sarama.Config) error {
 		default:
 			partition, offset, err := syncProducer.SendMessage(&sarama.ProducerMessage{
 				Topic: topic,
-				Value: sarama.StringEncoder("test_message-" + time.Now().String()),
+				//Value: sarama.StringEncoder("test_message-" + time.Now().String()),
+				Value: sarama.StringEncoder(GenRandomString(8 * 1024)),
 				Headers: []sarama.RecordHeader{
 					{Key: []byte("Name"), Value: []byte("golang")},
 					{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().Unix(), 10))},
@@ -108,7 +121,7 @@ func produce(brokers []string, conf *sarama.Config) error {
 				now = time.Now()
 				logger.Printf("wrote message at partition: %d, offset: %d", partition, offset)
 			}
-			time.Sleep(time.Duration(interval) * time.Microsecond)
+			// time.Sleep(time.Duration(interval) * time.Microsecond)
 		}
 	}
 	return nil
