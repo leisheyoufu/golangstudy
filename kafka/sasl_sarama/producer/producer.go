@@ -107,7 +107,7 @@ func produce(brokers []string, conf *sarama.Config) error {
 			partition, offset, err := syncProducer.SendMessage(&sarama.ProducerMessage{
 				Topic: topic,
 				//Value: sarama.StringEncoder("test_message-" + time.Now().String()),
-				Value: sarama.StringEncoder(GenRandomString(8 * 1024)),
+				Value: sarama.StringEncoder(GenRandomString(3 * 1024 * 1024)),
 				Headers: []sarama.RecordHeader{
 					{Key: []byte("Name"), Value: []byte("golang")},
 					{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().Unix(), 10))},
@@ -134,7 +134,7 @@ func main() {
 	conf.Producer.RequiredAcks = sarama.WaitForAll
 	conf.Producer.Return.Successes = true
 	conf.Producer.Timeout = time.Duration(10) * time.Second
-
+	conf.Producer.MaxMessageBytes = 4194304
 	conf.Metadata.Full = true
 	conf.Version = sarama.V2_4_0_0
 	conf.ClientID = "sasl_scram_client"
