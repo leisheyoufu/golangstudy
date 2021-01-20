@@ -20,6 +20,7 @@ require (
 	github.com/garyburd/redigo v1.6.0
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/spec v0.19.7
+	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/consul/api v1.7.0

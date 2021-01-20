@@ -25,3 +25,4 @@ https://www.cnblogs.com/yxlblogs/p/10115672.html
 https://studygolang.com/articles/17912
 https://blog.csdn.net/tflasd1157/article/details/81985722
 https://blog.csdn.net/nia305/article/details/88666663    // sarama-cluster
+https://github.com/Shopify/sarama/issues/809   // offsetsForTimes - Is this supported in sarama

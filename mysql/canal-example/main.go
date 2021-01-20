@@ -25,17 +25,21 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 
 	//库名，表名，行为，数据记录
 	record := fmt.Sprintf("%v %v %s %v\n", ev.Table.Schema, ev.Table.Name, ev.Action, ev.Rows)
-	fmt.Println(record)
+	fmt.Printf("Binlog: OnRow Begin %s Rows=%d\n", record, len(ev.Rows))
 
 	//此处是参考 https://github.com/gitstliu/MysqlToAll 里面的获取字段和值的方法
 	for i, _ := range ev.Rows {
+		var row string
 		for j, currColumn := range ev.Table.Columns {
 			//字段名，字段的索引顺序，字段对应的值
 			// len(ev.Rows) 一次有多行
-			row := fmt.Sprintf("%v %v\n", currColumn.Name, ev.Rows[i][j])
-			fmt.Println("row info:", row)
+			fmt.Println(ev.Rows[i])
+			row += fmt.Sprintf("%v %v\t data columns=%d\t", currColumn.Name, ev.Rows[i][j], len(ev.Rows[i]))
 		}
+		fmt.Printf("Binlog: OnRow columes=%d info:%s\n", len(ev.Table.Columns), row)
 	}
+
+	fmt.Printf("Binlog: OnRow end\n")
 
 	return nil
 }
@@ -44,7 +48,7 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 	//库，表
 	record := fmt.Sprintf("%s %s \n", schema, table)
-	fmt.Println("OnTable Changed", record)
+	fmt.Printf("Binlog: OnTable Changed\n", record)
 	return nil
 }
 
@@ -52,7 +56,7 @@ func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 func (h *MyEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
 	//源码：当force为true，立即同步位置
 	record := fmt.Sprintf("%v %v \n", pos.Name, pos.Pos)
-	fmt.Println("OnPosSynced", record)
+	fmt.Printf("Binlog: OnPosSynced\n", record)
 	return nil
 }
 
@@ -61,9 +65,21 @@ func (h *MyEventHandler) OnRotate(r *replication.RotateEvent) error {
 	//record := fmt.Sprintf("On Rotate: %v \n",&mysql.Position{Name: string(r.NextLogName), Pos: uint32(r.Position)})
 	//binlog的记录位置，新binlog的文件名
 	record := fmt.Sprintf("On Rotate %v %v \n", r.Position, r.NextLogName)
-	fmt.Println(record)
+	fmt.Printf("Binlog: %s", record)
 	return nil
 
+}
+
+// Begin transation
+func (h *MyEventHandler) OnBegin(pos mysql.Position, eh *replication.EventHeader) error {
+	fmt.Printf("Binlog: OnBegin\n")
+	return nil
+}
+
+// includes begin, commit, query
+func (h *MyEventHandler) OnQuery(eh *replication.EventHeader, e *replication.QueryEvent) error {
+	fmt.Printf("Binlog: OnQuery %s\n", string(e.Query))
+	return nil
 }
 
 // create alter drop truncate(删除当前表再新建一个一模一样的表结构)
@@ -76,8 +92,29 @@ func (h *MyEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.Q
 		string(queryEvent.Query),         //变更的sql语句
 		string(queryEvent.StatusVars[:]), //测试显示乱码
 		queryEvent.SlaveProxyID)          //从库代理ID？
-	fmt.Println("OnDDL start:", record, query_event)
-	fmt.Println("OnDDL end")
+	fmt.Println("Binlog: OnDDL start:", record, query_event)
+	fmt.Println("Binlog: OnDDL end\n")
+	return nil
+}
+
+// commit
+func (h *MyEventHandler) OnXID(nextPos mysql.Position) error {
+	fmt.Printf("Binlog: OnXID commit\n")
+	return nil
+}
+
+func (h *MyEventHandler) OnMariaDBGTID(eh *replication.EventHeader, e *replication.MariadbGTIDEvent) error {
+	gtid, err := mysql.ParseMariadbGTIDSet(e.GTID.String())
+	if err != nil {
+		fmt.Printf("Parse gtid error %v\n", err)
+		return err
+	}
+	fmt.Printf("Binlog: gtid=%s\n", gtid.String())
+	return nil
+}
+
+func (h *MyEventHandler) OnGTID(gtid mysql.GTIDSet) error {
+	fmt.Printf("Binlog: gtid=%s:%d\n", gtid.String())
 	return nil
 }
 

@@ -2,7 +2,6 @@ package canal
 
 import (
 	"fmt"
-	"reflect"
 	"sync/atomic"
 	"time"
 
@@ -89,7 +88,7 @@ func (c *Canal) runSyncBinlog() error {
 		// For RowsEvent, we can't save the position until meeting XIDEvent
 		// which tells the whole transaction is over.
 		// TODO: If we meet any DDL query, we must save too.
-		fmt.Printf("client event %+v\n", reflect.TypeOf(ev.Event))
+		//fmt.Printf("client event %+v\n", reflect.TypeOf(ev.Event))
 		switch e := ev.Event.(type) {
 		case *replication.RotateEvent:
 			pos.Name = string(e.NextLogName)
@@ -142,7 +141,6 @@ func (c *Canal) runSyncBinlog() error {
 				return errors.Trace(err)
 			}
 		case *replication.QueryEvent:
-			fmt.Printf("cltest: QueryEvent %s\n", string(e.Query))
 			stmts, _, err := c.parser.Parse(string(e.Query), "", "")
 			if err != nil {
 				log.Errorf("parse query(%s) err %v, will skip this event", e.Query, err)
@@ -252,7 +250,6 @@ func (c *Canal) updateReplicationDelay(ev *replication.BinlogEvent) {
 
 func (c *Canal) handleRowsEvent(e *replication.BinlogEvent) error {
 	ev := e.Event.(*replication.RowsEvent)
-
 	// Caveat: table may be altered at runtime.
 	schema := string(ev.Table.Schema)
 	table := string(ev.Table.Table)

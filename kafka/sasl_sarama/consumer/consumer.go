@@ -138,7 +138,7 @@ Loop:
 			if ok {
 				if time.Now().Sub(now).Seconds() > 3 {
 					now = time.Now()
-					fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", group, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+					fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\n", group, msg.Topic, msg.Partition, msg.Offset)
 				}
 				time.Sleep(time.Duration(interval) * time.Microsecond)
 				consumer.MarkOffset(msg, "") // mark message as processed

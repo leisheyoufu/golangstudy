@@ -44,6 +44,7 @@ dlv debug main.go -- --port 3309
 (dlv) b main.main
 (dlv) sources
 
+
 ## Result
 ```
 [2020/09/22 20:09:08] [info] sync.go:235 table structure changed, clear table cache: Test.User
