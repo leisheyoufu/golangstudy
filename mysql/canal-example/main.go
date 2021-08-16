@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/go-mysql-org/go-mysql/replication"
+	"github.com/leisheyoufu/golangstudy/mysql/replication"
 	"github.com/leisheyoufu/golangstudy/mysql/canal"
 )
 

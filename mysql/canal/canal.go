@@ -18,7 +18,7 @@ import (
 	"github.com/go-mysql-org/go-mysql/client"
 	"github.com/go-mysql-org/go-mysql/dump"
 	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/go-mysql-org/go-mysql/replication"
+	"github.com/leisheyoufu/golangstudy/mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
 )
 

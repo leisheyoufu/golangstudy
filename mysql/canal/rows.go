@@ -3,7 +3,7 @@ package canal
 import (
 	"fmt"
 
-	"github.com/go-mysql-org/go-mysql/replication"
+	"github.com/leisheyoufu/golangstudy/mysql/replication"
 	"github.com/go-mysql-org/go-mysql/schema"
 )
 
