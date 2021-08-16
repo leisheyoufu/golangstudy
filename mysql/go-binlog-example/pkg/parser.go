@@ -8,7 +8,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/leisheyoufu/golangstudy/mysql/canal"
-	"github.com/siddontang/go-mysql/schema"
+	"github.com/go-mysql-org/go-mysql/schema"
 )
 
 type BinlogParser struct{}

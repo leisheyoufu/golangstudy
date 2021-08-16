@@ -3,6 +3,8 @@ module github.com/leisheyoufu/golangstudy
 go 1.12
 
 replace (
+	github.com/coreos/bbolt => go.etcd.io/bbolt v1.3.4
+	github.com/siddontang/go-mysql => github.com/go-mysql-org/go-mysql v1.3.0
 	k8s.io/api => k8s.io/api v0.17.0
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.17.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.17.0
@@ -13,14 +15,14 @@ require (
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
+	github.com/coreos/bbolt v0.0.0-00010101000000-000000000000 // indirect
 	github.com/coreos/etcd v3.3.18+incompatible
 	github.com/emicklei/go-restful v2.9.6+incompatible
 	github.com/emicklei/go-restful-openapi v1.4.1
-	github.com/emicklei/go-restful-swagger12 v0.0.0-20170926063155-7524189396c6
 	github.com/garyburd/redigo v1.6.0
 	github.com/go-logr/logr v0.1.0
+	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-openapi/spec v0.19.7
-	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/protobuf v1.4.3
 	github.com/gorilla/mux v1.7.3
 	github.com/hashicorp/consul/api v1.7.0
@@ -28,26 +30,28 @@ require (
 	github.com/json-iterator/go v1.1.10
 	github.com/kr/pty v1.1.8
 	github.com/mattbaird/jsonpatch v0.0.0-20171005235357-81af80346b1a
+	github.com/mozillazg/go-cos v0.13.0
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/pingcap/check v0.0.0-20200212061837-5e12011dc712
 	github.com/pingcap/dm v1.0.6
-	github.com/pingcap/errors v0.11.5-0.20190809092503-95897b64e011
+	github.com/pingcap/errors v0.11.5-0.20201126102027-b0a155152ca3
 	github.com/pingcap/failpoint v0.0.0-20200702092429-9f69995143ce
-	github.com/pingcap/parser v0.0.0-20200616075836-fab06dab2086
+	github.com/pingcap/parser v0.0.0-20210415081931-48e7f467fd74
 	github.com/prometheus/client_golang v1.8.0
 	github.com/prometheus/common v0.14.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20191125035519-b054a8dfd10d
 	github.com/siddontang/go-log v0.0.0-20190221022429-1e957dd83bed
-	github.com/siddontang/go-mysql v0.0.0-20200222075837-12e89848f047
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.3.2
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
+	go.etcd.io/bbolt v1.3.4 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
+	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.26.0

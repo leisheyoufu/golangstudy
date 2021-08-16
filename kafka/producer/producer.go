@@ -3,13 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/Shopify/sarama"
 	"log"
 	"time"
+
+	"github.com/Shopify/sarama"
 )
 
 var (
 	endpoint string
+	topic    string
 )
 
 func syncProducer(endpoints []string) {
@@ -28,7 +30,6 @@ func syncProducer(endpoints []string) {
 
 	defer producer.Close()
 
-	topic := "demo"
 	srcValue := "sync: this is a message. index=%d"
 	for i := 0; i < 10; i++ {
 		value := fmt.Sprintf(srcValue, i)
@@ -54,4 +55,5 @@ func main() {
 
 func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "Endpoint for kafka, format: 192.168.126.151:9092")
+	flag.StringVar(&topic, "topic", "", "kafka topic")
 }

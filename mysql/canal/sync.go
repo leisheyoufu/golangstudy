@@ -9,9 +9,9 @@ import (
 	"github.com/pingcap/parser/ast"
 	uuid "github.com/satori/go.uuid"
 	"github.com/siddontang/go-log/log"
-	"github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go-mysql/replication"
-	"github.com/siddontang/go-mysql/schema"
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/replication"
+	"github.com/go-mysql-org/go-mysql/schema"
 )
 
 func (c *Canal) startSyncer() (*replication.BinlogStreamer, error) {
@@ -53,7 +53,6 @@ func (c *Canal) runSyncBinlog() error {
 		if err != nil {
 			return errors.Trace(err)
 		}
-
 		// Update the delay between the Canal and the Master before the handler hooks are called
 		c.updateReplicationDelay(ev)
 
@@ -72,7 +71,7 @@ func (c *Canal) runSyncBinlog() error {
 		}
 
 		savePos = false
-		force = false
+		force = true
 		pos := c.master.Position()
 
 		curPos := pos.Pos
@@ -141,32 +140,8 @@ func (c *Canal) runSyncBinlog() error {
 				return errors.Trace(err)
 			}
 		case *replication.QueryEvent:
-			stmts, _, err := c.parser.Parse(string(e.Query), "", "")
-			if err != nil {
-				log.Errorf("parse query(%s) err %v, will skip this event", e.Query, err)
-				continue
-			}
-			for _, stmt := range stmts {
-				nodes := parseStmt(stmt)
-				for _, node := range nodes {
-					if node.db == "" {
-						node.db = string(e.Schema)
-					}
-					if err = c.updateTable(node.db, node.table); err != nil {
-						return errors.Trace(err)
-					}
-				}
-				if len(nodes) > 0 {
-					savePos = true
-					force = true
-					// Now we only handle Table Changed DDL, maybe we will support more later.
-					if err = c.eventHandler.OnDDL(pos, e); err != nil {
-						return errors.Trace(err)
-					}
-				}
-			}
-			if savePos && e.GSet != nil {
-				c.master.UpdateGTIDSet(e.GSet)
+			if err = c.eventHandler.OnQuery(pos, e); err != nil {
+				return errors.Trace(err)
 			}
 		default:
 			continue

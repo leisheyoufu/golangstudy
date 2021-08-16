@@ -9,6 +9,11 @@ docker run -d --name kafka --publish 9092:9092 --link zookeeper --env KAFKA_ZOOK
 /opt/kafka/bin/kafka-topics.sh  --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic demo
 /opt/kafka/bin/kafka-topics.sh  --describe --zookeeper zookeeper:2181 --topic demo
 
+
+/opt/kafka/bin/kafka-leader-election.sh --bootstrap-server :9092 --topic demo2 --partition 0 --election-type preferred
+
+/opt/kafka/bin/zookeeper-shell.sh zookeeper:2181 ls /brokers/ids // list broker
+
 ## Producer command
 /opt/kafka/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic demo
 

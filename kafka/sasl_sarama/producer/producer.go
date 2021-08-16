@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"os/signal"
@@ -89,6 +90,23 @@ func describeTopic(brokers []string, config *sarama.Config) error {
 	return nil
 }
 
+func genHeaders(t time.Time) []sarama.RecordHeader {
+	headers := []sarama.RecordHeader{
+		{Key: []byte("Name"), Value: []byte("golang")},
+		{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().Unix(), 10))},
+	}
+	rand.Seed(time.Now().UnixNano())
+	r := rand.Intn(2)
+	if r == 1 {
+		headers = append(headers, sarama.RecordHeader{Key: []byte("Checkpoint"), Value: []byte(fmt.Sprintf("checkpoint:%s", fmt.Sprintf("%d", int32(t.UTC().Unix()))))})
+		//fmt.Printf("header %s\n", fmt.Sprintf("%v", t.UTC().Unix()))
+	} else {
+		headers = append(headers, sarama.RecordHeader{Key: []byte("Checkpoint"), Value: []byte(fmt.Sprintf("checkpoint:%s", fmt.Sprintf("%d", int64(math.MaxInt64))))})
+		//fmt.Printf("header %s\n", fmt.Sprintf("%v", int64(math.MaxInt64)))
+	}
+	return headers
+}
+
 func produce(brokers []string, conf *sarama.Config) error {
 	syncProducer, err := sarama.NewSyncProducer(brokers, conf)
 	if err != nil {
@@ -99,7 +117,13 @@ func produce(brokers []string, conf *sarama.Config) error {
 	exit := make(chan os.Signal, 1)
 	signal.Notify(exit, syscall.SIGINT, syscall.SIGTERM)
 	now := time.Now()
+	rand.Seed(time.Now().UnixNano())
 	for active == true {
+		r := rand.Intn(3)
+		t := time.Now()
+		if r == 2 {
+			t = time.Now()
+		}
 		select {
 		case <-exit:
 			active = false
@@ -107,17 +131,16 @@ func produce(brokers []string, conf *sarama.Config) error {
 			partition, offset, err := syncProducer.SendMessage(&sarama.ProducerMessage{
 				Topic: topic,
 				//Value: sarama.StringEncoder("test_message-" + time.Now().String()),
-				Value: sarama.StringEncoder(GenRandomString(3 * 1024 * 1024)),
-				Headers: []sarama.RecordHeader{
-					{Key: []byte("Name"), Value: []byte("golang")},
-					{Key: []byte("Timestamp"), Value: []byte(strconv.FormatInt(time.Now().Unix(), 10))},
-				},
+				Value:   sarama.StringEncoder(GenRandomString(128 * 1024)),
+				Headers: genHeaders(t),
 			})
 			if err != nil {
 				logger.Fatalln("failed to send message to ", topic, err)
 				return err
 			}
+			time.Sleep(300 * time.Microsecond)
 			if time.Now().Sub(now).Seconds() > 3 {
+				time.Sleep(3 * time.Second)
 				now = time.Now()
 				logger.Printf("wrote message at partition: %d, offset: %d", partition, offset)
 			}
@@ -130,7 +153,7 @@ func produce(brokers []string, conf *sarama.Config) error {
 func main() {
 	flag.Parse()
 	conf := sarama.NewConfig()
-	conf.Producer.Retry.Max = 1
+	conf.Producer.Retry.Max = 60
 	conf.Producer.RequiredAcks = sarama.WaitForAll
 	conf.Producer.Return.Successes = true
 	conf.Producer.Timeout = time.Duration(10) * time.Second

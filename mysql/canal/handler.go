@@ -1,8 +1,8 @@
 package canal
 
 import (
-	"github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go-mysql/replication"
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/replication"
 )
 
 type EventHandler interface {
@@ -11,12 +11,12 @@ type EventHandler interface {
 	// You need to clear the associated data like cache with the table.
 	// It will be called before OnDDL.
 	OnTableChanged(schema string, table string) error
-	OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEvent) error
 	OnRow(e *RowsEvent) error
 	OnXID(nextPos mysql.Position) error
 	OnGTID(gtid mysql.GTIDSet) error
 	// OnPosSynced Use your own way to sync position. When force is true, sync position immediately.
 	OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error
+	OnQuery(nextPos mysql.Position, e *replication.QueryEvent) error
 	String() string
 }
 

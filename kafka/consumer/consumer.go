@@ -15,17 +15,19 @@ import (
 
 var (
 	endpoint string
+	topic    string
+	jobId    string
 )
 
 func main() {
 	flag.Parse()
-	topic := []string{"demo"}
+	topics := []string{}
 	var wg = &sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(1)
 	//广播式消费：消费者1
-	go clusterConsumer(wg, []string{endpoint}, topic, "group-1")
+	go clusterConsumer(wg, []string{endpoint}, topics, "abc")
 	//广播式消费：消费者2
-	go clusterConsumer(wg, []string{endpoint}, topic, "group-2")
+	//go clusterConsumer(wg, []string{endpoint}, topic, "group-2")
 
 	wg.Wait()
 }
@@ -36,7 +38,7 @@ func clusterConsumer(wg *sync.WaitGroup, brokers, topics []string, groupId strin
 	config := cluster.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Group.Return.Notifications = true
-	config.Consumer.Offsets.Initial = sarama.OffsetNewest
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 	config.Consumer.Offsets.CommitInterval = 1 * time.Second
 
 	// init consumer
@@ -72,9 +74,15 @@ Loop:
 		select {
 		case msg, ok := <-consumer.Messages():
 			if ok {
-				fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", groupId, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
-				consumer.MarkOffset(msg, "") // mark message as processed
-				successes++
+				for _, header := range msg.Headers {
+					if string(header.Key) == jobId {
+						fmt.Fprintf(os.Stdout, "jobId %s %s\n", jobId, msg.Value)
+					}
+					//fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", groupId, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+					//consumer.MarkOffset(msg, "") // mark message as processed
+					successes++
+					fmt.Fprintf(os.Stdout, "%s:%s/%d/%d\t%s\t%s\n", groupId, msg.Topic, msg.Partition, msg.Offset, msg.Key, msg.Value)
+				}
 			}
 		case <-signals:
 			break Loop
@@ -86,4 +94,6 @@ Loop:
 
 func init() {
 	flag.StringVar(&endpoint, "endpoint", "", "Endpoint for kafka, format: 192.168.126.151:9092")
+	flag.StringVar(&topic, "topic", "", "topic for kafka")
+	flag.StringVar(&jobId, "jobId", "", "jobId kafka")
 }

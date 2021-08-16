@@ -5,7 +5,7 @@ import (
 
 	"github.com/pingcap/dm/pkg/binlog/event"
 	"github.com/pingcap/dm/pkg/gtid"
-	gmysql "github.com/siddontang/go-mysql/mysql"
+	gmysql "github.com/go-mysql-org/go-mysql/mysql"
 )
 
 func main() {

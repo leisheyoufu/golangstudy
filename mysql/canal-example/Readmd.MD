@@ -14,6 +14,8 @@ mysql> show master status;
 +---------------+----------+--------------+------------------+-------------------+
 | binlog.000004 |  5730584 |              |                  |                   |
 +---------------+----------+--------------+------------------+-------------------+
+
+mysqlbinlog --no-defaults --read-from-remote-server --host=127.0.0.1  --user=root --password=New123Dts --port 3319 -v --base64-output=decode-rows --start-position=3579 mysql-bin.000003
 ```
 go run main.go
 ```
@@ -37,7 +39,7 @@ mysql -uroot -p123456 -h127.0.0.1 -P3309
 ```
 
 ## Run
-go run main.go --port 3309
+go run main.go --port 3319
 mysql -uroot -p123456 -h127.0.0.1 -P3309 -e "drop database Test;"
 mysql -uroot -p123456 -h127.0.0.1 -P3309 -e "source user.sql;"
 dlv debug main.go -- --port 3309

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/leisheyoufu/golangstudy/mysql/canal"
-	"github.com/siddontang/go-mysql/schema"
+	"github.com/go-mysql-org/go-mysql/schema"
 )
 
 func TestCommonHandler_GetBinLogDataGetBinLogData_Insert(t *testing.T) {
