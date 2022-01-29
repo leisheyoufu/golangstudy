@@ -28,6 +28,8 @@ var (
 	SHA512    scram.HashGeneratorFcn = func() hash.Hash { return sha512.New() }
 	logger                           = log.New(os.Stdout, "[Producer] ", log.LstdFlags)
 	before    int
+	partition int
+	offset    int64
 )
 
 func init() {
@@ -38,6 +40,8 @@ func init() {
 	flag.StringVar(&group, "group", "demo", "kafka topic")
 	flag.IntVar(&interval, "interval", 1000, "sleep time when producing message")
 	flag.IntVar(&before, "before", 10, "seconds before current time")
+	flag.IntVar(&partition, "partition", 0, "kafka partition")
+	flag.Int64Var(&offset, "offset", 0, "kafka offset")
 	sarama.Logger = log.New(os.Stdout, "[Sarama] ", log.LstdFlags)
 }
 
@@ -58,25 +62,25 @@ func partitionConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 	config.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &sasl_sarama.XDGSCRAMClient{HashGeneratorFcn: SHA512} }
 	config.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA512
 
-	saramaClient, err := sarama.NewClient(brokers, config)
-	if err != nil {
-		log.Printf("Failed to init client error: %v\n", err)
-		return
-	}
-	t := time.Now().Add(time.Duration(0-before) * time.Second)
-	fmt.Printf("Unix nano time %v %d\n", t, t.UnixNano()/1000)
-	offset, err := saramaClient.GetOffset(topics[0], 0, t.UnixNano()/1000000)
-	if err != nil {
-		log.Printf("Get offset error: %v\n", err)
-		return
-	}
-	fmt.Printf("Time: %v offset: %d\n", t, offset)
+	//saramaClient, err := sarama.NewClient(brokers, config)
+	//if err != nil {
+	//	log.Printf("Failed to init client error: %v\n", err)
+	//	return
+	//}
+	//t := time.Now().Add(time.Duration(0-before) * time.Second)
+	//fmt.Printf("Unix nano time %v %d\n", t, t.UnixNano()/1000)
+	//offset, err := saramaClient.GetOffset(topics[partition], int32(partition), t.UnixNano()/1000000)
+	//if err != nil {
+	//	log.Printf("Get offset error: %v\n", err)
+	//	return
+	//}
+	//	fmt.Printf("Time: %v offset: %d\n", t, offset)
 	consumer, err := sarama.NewConsumer(brokers, config)
 	if err != nil {
 		log.Printf("Failed to init consumer error: %v\n", err)
 		return
 	}
-	partitionConsumer, err := consumer.ConsumePartition(topics[0], 0, offset)
+	partitionConsumer, err := consumer.ConsumePartition(topics[partition], int32(partition), offset)
 	if err != nil {
 		log.Printf("Failed to init consumer error: %v\n", err)
 		return
@@ -90,20 +94,23 @@ func partitionConsumer(wg *sync.WaitGroup, brokers, topics []string) {
 	signal.Notify(signals, os.Interrupt)
 
 	consumed := 0
-	select {
-	case msg := <-partitionConsumer.Messages():
-		if len(msg.Value) < 1024 && len(msg.Headers) >= 2 {
-			log.Printf("Consumed message offset %d, header=%s, value=%s\n", msg.Offset, string(msg.Headers[1].Value), string(msg.Value))
-		} else if len(msg.Value) < 1024 {
-			log.Printf("Consumed message offset %d, value=%s\n", msg.Offset, string(msg.Value))
-		} else if len(msg.Headers) >= 2 {
-			log.Printf("Consumed message offset %d, header=%s\n", msg.Offset, string(msg.Headers[1].Value))
-		} else {
-			log.Printf("Consumed message offset %d", msg.Offset)
+Loop:
+	for {
+		select {
+		case msg := <-partitionConsumer.Messages():
+			if len(msg.Value) < 1024 && len(msg.Headers) >= 2 {
+				log.Printf("Consumed message offset %d, header=%s, value=%s\n", msg.Offset, string(msg.Headers[1].Value), string(msg.Value))
+			} else if len(msg.Value) < 1024 {
+				log.Printf("Consumed message offset %d, value=%s\n", msg.Offset, string(msg.Value))
+			} else if len(msg.Headers) >= 2 {
+				log.Printf("Consumed message offset %d, header=%s\n", msg.Offset, string(msg.Headers[1].Value))
+			} else {
+				log.Printf("Consumed message offset %d", msg.Offset)
+			}
+			consumed++
+		case <-signals:
+			break Loop
 		}
-		consumed++
-	case <-signals:
-		break
 	}
 }
 
@@ -181,7 +188,7 @@ func main() {
 	//广播式消费：消费者1
 	//go clusterConsumer(wg, []string{endpoints}, topics, "console-consumer2")
 	//广播式消费：消费者2
-	//go clusterConsumer(wg, []string{endpoints}, topics)
+	//clusterConsumer(wg, []string{endpoints}, topics)
 	partitionConsumer(wg, []string{endpoints}, topics)
 	wg.Wait()
 }

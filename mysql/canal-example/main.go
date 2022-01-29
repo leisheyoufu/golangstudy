@@ -5,32 +5,37 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/leisheyoufu/golangstudy/mysql/replication"
 	"github.com/leisheyoufu/golangstudy/mysql/canal"
+	"github.com/leisheyoufu/golangstudy/mysql/replication"
 )
 
 var host = flag.String("host", "127.0.0.1", "MySQL host")
 var port = flag.Int("port", 3306, "MySQL port")
 var user = flag.String("user", "root", "MySQL user, must have replication privilege")
 var password = flag.String("password", "123456", "MySQL password")
-var posFile = flag.String("file", "", "mysql binlog file")
-var binlogPos = flag.Uint("pos", 0, "binlog pos" )
+var startFile = flag.String("file", "", "mysql binlog file")
+var startPos = flag.Uint("pos", 0, "start binlog pos")
+var endFile = flag.String("endfile", "binlog.999999", "end binlog pos")
+var endPos = flag.Uint("endpos", 99999, "end binlog pos")
 var gtid = flag.String("gtid", "", "mysql gtid")
 var flavor = flag.String("flavor", mysql.MySQLFlavor, "mysql or mariadb")
 var db = flag.String("db", "", "db to sync")
 var table = flag.String("table", "", "table to sync")
 var value = flag.String("value", "", "data to search")
-
+var limit = flag.Uint("limit", 1000000, "limit count")
 
 type MyEventHandler struct {
 	canal.DummyEventHandler
-	gtid string
-	pos mysql.Position
-	db string
+	gtid  string
+	pos   mysql.Position
+	db    string
 	table string
 	value string
+	count int64
 }
 
 func Equal(a interface{}, b string) bool {
@@ -64,14 +69,34 @@ func Equal(a interface{}, b string) bool {
 	return false
 }
 
+func PosLessOrEqual(pos1 mysql.Position, pos2 mysql.Position) bool {
+	parts1 := strings.Split(pos1.Name, ".")
+	index1, _ := strconv.ParseUint(parts1[len(parts1)-1], 10, 64)
+
+	parts2 := strings.Split(pos2.Name, ".")
+	index2, _ := strconv.ParseUint(parts2[len(parts2)-1], 10, 64)
+
+	if index1 < index2 {
+		return true
+	}
+	if index1 == index2 && pos1.Pos < pos2.Pos {
+		return true
+	}
+	return false
+}
+
 //监听数据记录
 func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
+	h.count++
 	found := true
 	if h.value != "" {
 		found = false
 	}
 	//库名，表名，行为，数据记录
 	if !(h.db == "" && h.table == "" || h.db == ev.Table.Schema && h.table == ev.Table.Name) {
+		return nil
+	}
+	if h.count > int64(*limit) {
 		return nil
 	}
 	fmt.Printf("Row event %s %s.%s Rows=%d\n", ev.Action, ev.Table.Schema, ev.Table.Name, len(ev.Rows))
@@ -88,19 +113,22 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 	}
 	if found {
 		for i, _ := range ev.Rows {
-			if ev.Action == "update" && i == 0{
+			if ev.Action == "update" && i == 0 {
 				fmt.Printf("Before:\n")
 			}
-			if ev.Action == "update" && i == 1{
+			if ev.Action == "update" && i == 1 {
 				fmt.Printf("After:\n")
 			}
 			for j, currColumn := range ev.Table.Columns {
-				fmt.Printf("column %s = %v\n", currColumn.Name, ev.Rows[i][j])
+				fmt.Printf("db %s table %s column %s = %v\n", ev.Table.Schema, ev.Table.Name, currColumn.Name, ev.Rows[i][j])
 			}
 		}
 	}
-
-
+	end := mysql.Position{Pos: uint32(*endPos), Name: *endFile}
+	if !PosLessOrEqual(h.pos, end) {
+		fmt.Printf("end pos %d reached\n", *endPos)
+		os.Exit(0)
+	}
 	//fmt.Printf("Binlog: OnRow end\n")
 	return nil
 }
@@ -110,6 +138,9 @@ func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 	//库，表
 	//record := fmt.Sprintf("%s %s \n", schema, table)
 	if !(h.db == "" && h.table == "" || h.db == schema && h.table == table) {
+		return nil
+	}
+	if h.count > int64(*limit) {
 		return nil
 	}
 	fmt.Printf("Binlog: OnTable Changed %s.%s\n", schema, table)
@@ -122,7 +153,7 @@ func (h *MyEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, forc
 	//源码：当force为true，立即同步位置
 	h.pos = mysql.Position{
 		Name: pos.Name,
-		Pos: pos.Pos,
+		Pos:  pos.Pos,
 	}
 	//fmt.Printf("Sync pos to %v\n", h.pos)
 	return nil
@@ -134,7 +165,7 @@ func (h *MyEventHandler) OnRotate(r *replication.RotateEvent) error {
 	//binlog的记录位置，新binlog的文件名
 	h.pos = mysql.Position{
 		Name: string(r.NextLogName),
-		Pos: uint32(r.Position),
+		Pos:  uint32(r.Position),
 	}
 	fmt.Printf("Rotate pos to %v\n", h.pos)
 	return nil
@@ -143,20 +174,36 @@ func (h *MyEventHandler) OnRotate(r *replication.RotateEvent) error {
 
 // Begin transation
 func (h *MyEventHandler) OnBegin(pos mysql.Position, eh *replication.EventHeader) error {
+	h.count++
 	h.pos = mysql.Position{
 		Name: pos.Name,
-		Pos: pos.Pos,
+		Pos:  pos.Pos,
 	}
 	return nil
 }
 
 // includes begin, commit, query
 func (h *MyEventHandler) OnQuery(nextPos mysql.Position, e *replication.QueryEvent) error {
-	if !(h.db == "" && h.table == "" || h.db == string(e.Schema)) {
+	h.count++
+	//if !(h.db == "" && h.table == "" || h.db == string(e.Schema) && strings.Contains(string(e.Query), h.table)) {
+	//	return nil
+	//}
+	//if !(h.db == string(e.Schema)){
+	//	return nil
+	//}
+	//if h.count > int64(*limit) {
+	//	return nil
+	//}
+	if !(strings.Contains(string(e.Query), h.db)) {
 		return nil
 	}
-	fmt.Printf("Binlog: OnQuery gtid=%s pos=%v %s\n", h.gtid, h.pos, string(e.Query))
+	fmt.Printf("Binlog: OnQuery gtid=%s pos=%v db=%s %s\n", h.gtid, h.pos, string(e.Schema), string(e.Query))
 	h.pos = nextPos
+	end := mysql.Position{Pos: uint32(*endPos), Name: *endFile}
+	if !PosLessOrEqual(h.pos, end) {
+		fmt.Printf("end pos %d reached\n", *endPos)
+		os.Exit(0)
+	}
 	return nil
 }
 
@@ -170,6 +217,9 @@ func (h *MyEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.Q
 		string(queryEvent.Query),         //变更的sql语句
 		string(queryEvent.StatusVars[:]), //测试显示乱码
 		queryEvent.SlaveProxyID)          //从库代理ID？
+	if h.count > int64(*limit) {
+		return nil
+	}
 	fmt.Println("Binlog: OnDDL start:", record, query_event)
 	fmt.Println("Binlog: OnDDL end\n")
 	return nil
@@ -177,15 +227,20 @@ func (h *MyEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.Q
 
 // commit
 func (h *MyEventHandler) OnXID(nextPos mysql.Position) error {
+	h.count++
+	if h.count > int64(*limit) {
+		return nil
+	}
 	//fmt.Printf("At pos %v, gtid %s OnXID\n", h.pos, h.gtid)
 	h.pos = mysql.Position{
 		Name: nextPos.Name,
-		Pos: nextPos.Pos,
+		Pos:  nextPos.Pos,
 	}
 	return nil
 }
 
 func (h *MyEventHandler) OnMariaDBGTID(eh *replication.EventHeader, e *replication.MariadbGTIDEvent) error {
+	h.count++
 	_, err := mysql.ParseMariadbGTIDSet(e.GTID.String())
 	if err != nil {
 		fmt.Printf("Parse gtid error %v\n", err)
@@ -226,8 +281,8 @@ func main() {
 	c.SetEventHandler(handler)
 	//mysql-bin.000004, 1027
 	var pos mysql.Position
-	if *posFile != "" {
-		pos = mysql.Position{Name: *posFile, Pos: uint32(*binlogPos)}
+	if *startFile != "" {
+		pos = mysql.Position{Name: *startFile, Pos: uint32(*startPos)}
 	} else {
 		pos, err = c.GetMasterPos()
 		if err != nil {
@@ -235,6 +290,13 @@ func main() {
 			os.Exit(1)
 		}
 	}
+	go func() {
+		for {
+			fmt.Printf("scaned pos %s gtid %s\n", handler.pos.String(), handler.gtid)
+			time.Sleep(5 * time.Second)
+		}
+
+	}()
 
 	handler.pos = pos
 	if *gtid != "" {
@@ -249,10 +311,10 @@ func main() {
 			os.Exit(1)
 		}
 		os.Exit(0)
-	} else if *posFile != "" && *binlogPos != 0 {
+	} else if *startFile != "" && *startPos != 0 {
 		pos = mysql.Position{
-			Name: *posFile,
-			Pos: uint32(*binlogPos),
+			Name: *startFile,
+			Pos:  uint32(*startPos),
 		}
 	}
 	err = c.RunFrom(pos)

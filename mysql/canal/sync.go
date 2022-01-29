@@ -5,13 +5,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/schema"
+	"github.com/leisheyoufu/golangstudy/mysql/replication"
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/ast"
 	uuid "github.com/satori/go.uuid"
 	"github.com/siddontang/go-log/log"
-	"github.com/go-mysql-org/go-mysql/mysql"
-	"github.com/leisheyoufu/golangstudy/mysql/replication"
-	"github.com/go-mysql-org/go-mysql/schema"
 )
 
 func (c *Canal) startSyncer() (*replication.BinlogStreamer, error) {
@@ -143,6 +143,7 @@ func (c *Canal) runSyncBinlog() error {
 			if err = c.eventHandler.OnQuery(pos, e); err != nil {
 				return errors.Trace(err)
 			}
+			savePos = true
 		default:
 			continue
 		}
@@ -243,6 +244,9 @@ func (c *Canal) handleRowsEvent(e *replication.BinlogEvent) error {
 		action = UpdateAction
 	default:
 		return errors.Errorf("%s not supported now", e.Header.EventType)
+	}
+	if int(ev.ColumnCount) != len(t.Columns) {
+		fmt.Printf("cltest aliyun column dismatch\n")
 	}
 	events := newRowsEvent(t, action, ev.Rows, e.Header)
 	return c.eventHandler.OnRow(events)

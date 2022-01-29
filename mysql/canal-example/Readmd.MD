@@ -15,7 +15,7 @@ mysql> show master status;
 | binlog.000004 |  5730584 |              |                  |                   |
 +---------------+----------+--------------+------------------+-------------------+
 
-mysqlbinlog --no-defaults --read-from-remote-server --host=127.0.0.1  --user=root --password=New123Dts --port 3319 -v --base64-output=decode-rows --start-position=3579 mysql-bin.000003
+mysqlbinlog --no-defaults --read-from-remote-server --host=127.0.0.1  --user=root --password=New123 --port 3319 -v --base64-output=decode-rows --start-position=3579 mysql-bin.000003
 ```
 go run main.go
 ```
@@ -180,3 +180,4 @@ cltest: QueryEvent COMMIT
 
 ## Reference
 [利用基于canal的go库来监听binlog日志](https://blog.csdn.net/Marcus929/article/details/103871699)
+[Cannot switch database with USE command](https://github.com/go-sql-driver/mysql/issues/173)

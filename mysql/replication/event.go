@@ -1,6 +1,7 @@
 package replication
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -23,6 +24,51 @@ const (
 	PartLogicalTimestampLength = 8
 	BinlogChecksumLength       = 4
 	UndefinedServerVer         = 999999 // UNDEFINED_SERVER_VERSION
+)
+
+// These constants describe the type of status variables in q Query packet.
+const (
+	// QFlags2Code is Q_FLAGS2_CODE
+	QFlags2Code = 0
+
+	// QSQLModeCode is Q_SQL_MODE_CODE
+	QSQLModeCode = 1
+
+	// QCatalog is Q_CATALOG
+	QCatalog = 2
+
+	// QAutoIncrement is Q_AUTO_INCREMENT
+	QAutoIncrement = 3
+
+	// QCharsetCode is Q_CHARSET_CODE
+	QCharsetCode = 4
+
+	// QTimeZoneCode is Q_TIME_ZONE_CODE
+	QTimeZoneCode = 5
+
+	// QCatalogNZCode is Q_CATALOG_NZ_CODE
+	QCatalogNZCode = 6
+
+	// QLCTimeNamesCode is Q_LC_TIME_NAMES_CODE
+	QLCTimeNamesCode = 7
+
+	// QCharsetDatabaseCode is Q_CHARSET_DATABASE_CODE
+	QCharsetDatabaseCode = 8
+
+	// QTableMapForUpdateCode is Q_TABLE_MAP_FOR_UPDATE_CODE
+	QTableMapForUpdateCode = 9
+
+	// QMasterDataWrittenCode is Q_MASTER_DATA_WRITTEN_CODE
+	QMasterDataWrittenCode = 10
+
+	// QInvokers is Q_INVOKERS
+	QInvokers = 11
+
+	// QUpdatedDBNames is Q_UPDATED_DB_NAMES
+	QUpdatedDBNames = 12
+
+	// QMicroSeconds is Q_MICROSECONDS
+	QMicroSeconds = 13
 )
 
 type BinlogEvent struct {
@@ -289,6 +335,16 @@ func (e *XIDEvent) Dump(w io.Writer) {
 	fmt.Fprintln(w)
 }
 
+//Charset 字符集（客户端，连接，服务器）
+type Charset struct {
+	// @@session.character_set_client
+	Client uint16
+	// @@session.collation_connection
+	Conn uint16
+	// @@session.collation_server
+	Server uint16
+}
+
 type QueryEvent struct {
 	SlaveProxyID  uint32
 	ExecutionTime uint32
@@ -297,6 +353,11 @@ type QueryEvent struct {
 	Schema        []byte
 	Query         []byte
 
+	SqlMode  *uint64
+	Charset  *Charset
+	Timezone *string
+	// @@session.collation_database
+	DatabaseCharset *uint16
 	// in fact QueryEvent dosen't have the GTIDSet information, just for beneficial to use
 	GSet GTIDSet
 }
@@ -329,6 +390,90 @@ func (e *QueryEvent) Decode(data []byte) error {
 	pos++
 
 	e.Query = data[pos:]
+	e.ParseStatusVars()
+	return nil
+}
+
+func (e *QueryEvent) ParseStatusVars() error {
+	vars := e.StatusVars
+	for pos := 0; pos < len(vars); {
+		code := vars[pos]
+		pos++
+
+		// All codes are optional, but if present they must occur in numerically
+		// increasing order (except for 6 which occurs in the place of 2) to allow
+		// for backward compatibility.
+		switch code {
+		case QFlags2Code, QAutoIncrement:
+			pos += 4
+		case QSQLModeCode:
+			e.SqlMode = new(uint64)
+			*e.SqlMode = binary.LittleEndian.Uint64(vars[pos : pos+8])
+			pos += 8
+		case QCatalog: // Used in MySQL 5.0.0 - 5.0.3
+			if pos+1 > len(vars) {
+				return fmt.Errorf("Q_CATALOG status var overflows buffer (%v + 1 > %v)", pos, len(vars))
+			}
+			pos += 1 + int(vars[pos]) + 1
+		case QCatalogNZCode: // Used in MySQL > 5.0.3 to replace QCatalog
+			if pos+1 > len(vars) {
+				return fmt.Errorf("Q_CATALOG_NZ_CODE status var overflows buffer (%v + 1 > %v)", pos, len(vars))
+			}
+			pos += 1 + int(vars[pos])
+		case QCharsetCode:
+			if pos+6 > len(vars) {
+				return fmt.Errorf("Q_CHARSET_CODE status var overflows buffer (%v + 6 > %v)", pos, len(vars))
+			}
+			e.Charset = &Charset{
+				Client: binary.LittleEndian.Uint16(vars[pos : pos+2]),
+				Conn:   binary.LittleEndian.Uint16(vars[pos+2 : pos+4]),
+				Server: binary.LittleEndian.Uint16(vars[pos+4 : pos+6]),
+			}
+			pos += 6
+		case QTimeZoneCode:
+			if pos+1 > len(vars) {
+				return fmt.Errorf("QTimeZoneCode status var overflows buffer (%v + 1 > %v)", pos, len(vars))
+			}
+			e.Timezone = new(string)
+			*e.Timezone = string(vars[pos+1 : pos+1+int(vars[pos])])
+			pos += 1 + int(vars[pos])
+		case QLCTimeNamesCode:
+			pos += 2
+		case QCharsetDatabaseCode:
+			e.DatabaseCharset = new(uint16)
+			*e.DatabaseCharset = binary.LittleEndian.Uint16(vars[pos : pos+2])
+			pos += 2
+		case QTableMapForUpdateCode:
+			pos += 8
+		case QMasterDataWrittenCode:
+			pos += 4
+		case QInvokers:
+			if pos+1 > len(vars) {
+				return fmt.Errorf("QInvokers status var overflows buffer (%v + 1 > %v)", pos, len(vars))
+			}
+			pos += 1 + int(vars[pos])
+			if pos+1 > len(vars) {
+				return fmt.Errorf("QInvokers status var overflows buffer (%v + 1 > %v)", pos, len(vars))
+			}
+			pos += 1 + int(vars[pos])
+		case QUpdatedDBNames:
+			n := int(vars[pos])
+			pos++
+			for i := 0; i < n; i++ {
+				idx := bytes.IndexByte(vars[pos:], byte(0))
+				if idx > -1 {
+					pos += idx + 1
+				} else {
+					return errors.New("QUpdatedDBNames: Not enough data")
+				}
+			}
+		case QMicroSeconds:
+			pos += 3
+		default:
+			// If we see something higher than what we're interested in, we can stop.
+			return nil
+		}
+	}
 	return nil
 }
 
