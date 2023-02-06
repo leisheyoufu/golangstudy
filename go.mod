@@ -11,14 +11,13 @@ replace (
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/coreos/etcd v3.3.18+incompatible
 	github.com/emicklei/go-restful v2.9.6+incompatible
 	github.com/emicklei/go-restful-openapi v1.4.1
 	github.com/garyburd/redigo v1.6.0
-	github.com/go-logr/logr v0.1.0
+	github.com/go-logr/logr v0.2.0
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-openapi/spec v0.19.7
 	github.com/golang/protobuf v1.4.3
@@ -45,24 +44,22 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	github.com/xitongsys/parquet-go v1.5.1
-	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be // indirect
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
-	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	google.golang.org/appengine v1.6.5 // indirect
+	golang.org/x/time v0.0.0-20200630173020-3af7569d3a1e
 	google.golang.org/grpc v1.27.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/yaml.v2 v2.3.0
 	gotest.tools v2.2.0+incompatible
-	k8s.io/api v0.17.2
-	k8s.io/apimachinery v0.17.2
+	k8s.io/api v0.20.0
+	k8s.io/apimachinery v0.20.0
 	k8s.io/cli-runtime v0.17.2
-	k8s.io/client-go v0.17.2
+	k8s.io/client-go v0.20.0
 	k8s.io/klog v1.0.0
 	k8s.io/kubectl v0.17.2
 	k8s.io/kubernetes v1.13.1
-	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6 // indirect
 	sigs.k8s.io/controller-runtime v0.0.0-00010101000000-000000000000
 )
