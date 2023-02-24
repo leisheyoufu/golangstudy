@@ -11,7 +11,6 @@ replace (
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/Shopify/sarama v1.26.1
 	github.com/bsm/sarama-cluster v2.1.15+incompatible
 	github.com/coreos/etcd v3.3.18+incompatible
@@ -45,13 +44,11 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 	github.com/xitongsys/parquet-go v1.5.1
-	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be // indirect
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20201021035429-f5854403a974
-	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	github.com/xitongsys/parquet-go-source v0.0.0-20201108113611-f372b7d813be
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	golang.org/x/net v0.7.0
+	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0
-	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.27.1
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15
 	gopkg.in/yaml.v2 v2.3.0
