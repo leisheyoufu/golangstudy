@@ -1,0 +1,11 @@
+rep:
+https://github.com/mysql/mysql-workbench/tree/8.0/library/parsers/grammars
+
+how to build:
+antlr4 -Dlanguage=Go -listener -o ../parser -package parser MySQLLexer.g4 MySQLParser.g4
+
+fix the issue:
+mysql_lexer.go
+type MySQLLexer struct {
+	*MySQLBaseLexer ==> replace it by MySQLBaseLexer
+}
