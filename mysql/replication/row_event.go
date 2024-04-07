@@ -918,7 +918,6 @@ func (e *RowsEvent) Decode(data []byte) (err2 error) {
 			pos += n
 		}
 	}
-
 	return nil
 }
 

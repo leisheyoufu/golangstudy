@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/leisheyoufu/golangstudy/cos/coscli/coscli"
 	"os"
 
-	"github.com/leisheyoufu/golangstudy/cos/coscli"
 	"github.com/spf13/cobra"
 )
 

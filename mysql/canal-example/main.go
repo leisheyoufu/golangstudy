@@ -85,33 +85,47 @@ func PosLessOrEqual(pos1 mysql.Position, pos2 mysql.Position) bool {
 	return false
 }
 
-//监听数据记录
+// 监听数据记录
 func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 	h.count++
 	found := true
+	printAll := false
 	if h.value != "" {
 		found = false
 	}
-	//库名，表名，行为，数据记录
-	if !(h.db == "" && h.table == "" || h.db == ev.Table.Schema && h.table == ev.Table.Name) {
-		return nil
+
+	if h.db == "" || h.table == "" {
+		printAll = true
 	}
-	if h.count > int64(*limit) {
-		return nil
+	if !printAll {
+		if !(h.db == ev.Table.Schema && h.table == ev.Table.Name) {
+			return nil
+		}
 	}
-	fmt.Printf("Row event %s %s.%s Rows=%d\n", ev.Action, ev.Table.Schema, ev.Table.Name, len(ev.Rows))
+	targetIndexs := make([]int, 0)
+	//fmt.Printf("Row event %s %s.%s Rows=%d\n", ev.Action, ev.Table.Schema, ev.Table.Name, len(ev.Rows))
 
 	//此处是参考 https://github.com/gitstliu/MysqlToAll 里面的获取字段和值的方法
 	if !found {
 		for i, _ := range ev.Rows {
 			for j, _ := range ev.Table.Columns {
+				//if col.Name == "id" {
+				//	fmt.Printf("cltest column id val %v\n", ev.Rows[i][j])
+				//}
+				//if col.Name == "id" {
+				//	if ev.Rows[i][j].(int32) == 29906751 {
+				//		found = true
+				//	}
+				//	//fmt.Printf("cltest id column type %v", reflect.TypeOf(ev.Rows[i][j]))
+				//}
 				if Equal(ev.Rows[i][j], h.value) {
+					targetIndexs = append(targetIndexs, i)
 					found = true
 				}
 			}
 		}
 	}
-	if found {
+	if printAll {
 		for i, _ := range ev.Rows {
 			if ev.Action == "update" && i == 0 {
 				fmt.Printf("Before:\n")
@@ -124,6 +138,17 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 			}
 		}
 	}
+	if found {
+		for _, targetIndex := range targetIndexs {
+			for j, currColumn := range ev.Table.Columns {
+				fmt.Printf("db %s table %s column %s = %v\n", ev.Table.Schema, ev.Table.Name, currColumn.Name, ev.Rows[targetIndex][j])
+				if currColumn.Name == "remark" {
+					fmt.Printf("cltest remark json %v\n", string(ev.Rows[targetIndex][j].([]byte)))
+				}
+			}
+		}
+
+	}
 	end := mysql.Position{Pos: uint32(*endPos), Name: *endFile}
 	if !PosLessOrEqual(h.pos, end) {
 		fmt.Printf("end pos %d reached\n", *endPos)
@@ -133,7 +158,7 @@ func (h *MyEventHandler) OnRow(ev *canal.RowsEvent) error {
 	return nil
 }
 
-//创建、更改、重命名或删除表时触发，通常会需要清除与表相关的数据，如缓存。It will be called before OnDDL.
+// 创建、更改、重命名或删除表时触发，通常会需要清除与表相关的数据，如缓存。It will be called before OnDDL.
 func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 	//库，表
 	//record := fmt.Sprintf("%s %s \n", schema, table)
@@ -148,7 +173,7 @@ func (h *MyEventHandler) OnTableChanged(schema string, table string) error {
 	return nil
 }
 
-//监听binlog日志的变化文件与记录的位置
+// 监听binlog日志的变化文件与记录的位置
 func (h *MyEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
 	//源码：当force为true，立即同步位置
 	h.pos = mysql.Position{
@@ -159,7 +184,7 @@ func (h *MyEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, forc
 	return nil
 }
 
-//当产生新的binlog日志后触发(在达到内存的使用限制后（默认为 1GB），会开启另一个文件，每个新文件的名称后都会有一个增量。)
+// 当产生新的binlog日志后触发(在达到内存的使用限制后（默认为 1GB），会开启另一个文件，每个新文件的名称后都会有一个增量。)
 func (h *MyEventHandler) OnRotate(r *replication.RotateEvent) error {
 	//record := fmt.Sprintf("On Rotate: %v \n",&mysql.Position{Name: string(r.NextLogName), Pos: uint32(r.Position)})
 	//binlog的记录位置，新binlog的文件名
@@ -267,6 +292,7 @@ func main() {
 	cfg.Addr = fmt.Sprintf("%s:%d", *host, *port)
 	cfg.User = *user
 	cfg.Password = *password
+	//cfg.UseDecimal = false
 
 	cfg.Dump.TableDB = ""
 	cfg.Dump.ExecutionPath = ""

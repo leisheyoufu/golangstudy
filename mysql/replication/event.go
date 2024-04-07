@@ -335,7 +335,7 @@ func (e *XIDEvent) Dump(w io.Writer) {
 	fmt.Fprintln(w)
 }
 
-//Charset 字符集（客户端，连接，服务器）
+// Charset 字符集（客户端，连接，服务器）
 type Charset struct {
 	// @@session.character_set_client
 	Client uint16
@@ -364,7 +364,6 @@ type QueryEvent struct {
 
 func (e *QueryEvent) Decode(data []byte) error {
 	pos := 0
-
 	e.SlaveProxyID = binary.LittleEndian.Uint32(data[pos:])
 	pos += 4
 
@@ -440,8 +439,8 @@ func (e *QueryEvent) ParseStatusVars() error {
 		case QLCTimeNamesCode:
 			pos += 2
 		case QCharsetDatabaseCode:
-			e.DatabaseCharset = new(uint16)
-			*e.DatabaseCharset = binary.LittleEndian.Uint16(vars[pos : pos+2])
+			charsetDatabaseCode := binary.LittleEndian.Uint16(vars[pos : pos+2])
+			e.DatabaseCharset = &charsetDatabaseCode
 			pos += 2
 		case QTableMapForUpdateCode:
 			pos += 8

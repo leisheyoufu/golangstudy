@@ -288,7 +288,7 @@ func (p *BinlogParser) parseEvent(h *EventHeader, data []byte, rawData []byte) (
 			e = &GenericEvent{}
 		}
 	}
-
+	// cltest decode
 	if err := e.Decode(data); err != nil {
 		return nil, &EventError{h, err.Error(), data}
 	}

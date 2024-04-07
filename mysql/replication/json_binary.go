@@ -3,11 +3,11 @@ package replication
 import (
 	"encoding/json"
 	"fmt"
-	"math"
-
 	. "github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/pingcap/errors"
+	"github.com/shopspring/decimal"
 	"github.com/siddontang/go/hack"
+	"math"
 )
 
 const (
@@ -398,10 +398,11 @@ func (d *jsonBinaryDecoder) decodeOpaque(data []byte) interface{} {
 func (d *jsonBinaryDecoder) decodeDecimal(data []byte) interface{} {
 	precision := int(data[0])
 	scale := int(data[1])
-
+	// cltest decode json decimal
+	decimal.MarshalJSONWithoutQuotes = true
 	v, _, err := decodeDecimal(data[2:], precision, scale, d.useDecimal)
+	//v, _, err := decodeDecimal(data[2:], precision, scale, true)
 	d.err = err
-
 	return v
 }
 
